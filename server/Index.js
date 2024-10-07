@@ -26,7 +26,7 @@ const pool = new Pool({
 
   port: 5432,
 });
-
+//Jut to add commit
 
 // Middleware
 app.use(bodyParser.json());
