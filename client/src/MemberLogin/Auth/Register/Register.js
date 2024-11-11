@@ -188,7 +188,7 @@ const Registerm = () => {
             navigate("/")
         } catch (error) {
             console.error('Error:', error);
-            alert('Error creating group.');
+            alert('Error creating member.');
         }
     };const Reg = () => {
         navigate("/");

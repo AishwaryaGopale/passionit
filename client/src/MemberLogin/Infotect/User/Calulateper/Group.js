@@ -46,9 +46,9 @@ const Group = () => {
     <>
       <div>
         <div className='p-4 '>
-          <button onClick={() => CreateGroup()} className='bg-[#4d70d1] rounded-[10px] p-1 border-[black] hover:rounded-[20px] hover:bg-[#7474bb] hover:text-white'>Create Group</button>
+          <button onClick={() => CreateGroup()} className='bg-[#7f7ff5] rounded-[10px] p-1 border-[black] hover:rounded-[20px] dark:bg-[#8b8bf7] hover:text-white'>Create Group</button>
           <div className='p-4 inline'>
-            <button onClick={() => MemberTable()} className='bg-[#4d70d1] rounded-[10px] p-1 border-[black] hover:rounded-[20px] hover:bg-[#7474bb] hover:text-white'>Group Members</button>
+            <button onClick={() => MemberTable()} className='bg-[#7f7ff5] rounded-[10px] p-1 border-[black] hover:rounded-[20px] dark:bg-[#8b8bf7] hover:text-white'>Group Members</button>
           </div>
         </div>
       </div>

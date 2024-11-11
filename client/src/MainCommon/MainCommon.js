@@ -63,7 +63,8 @@ import Incentive from '../MemberLogin/Infotect/User/Calulateper/ResourcePage/Inc
 import Update from '../MemberLogin/Infotect/User/Calulateper/ResourcePage/Incentive/Update';
 import AddgroupMember from '../MemberLogin/Infotect/User/Calulateper/AddgroupMember/AddgroupMember';
 // import Footer from '../MemberLogin/Infotect/User/Footer/Footer';
-import NestedGroup from '../MemberLogin/Infotect/User/NestedGroup/NestedGroup';
+import Groupmergetable from '../MemberLogin/AdminPanel/GroupMerge/GroupMergeTable'
+import NestedGroup from '../MemberLogin/AdminPanel/GroupMerge/NestedGroup/NestedGroup';
 import GroupTables from '../MemberLogin/Infotect/User/NestedGroup/GroupTables';
 import RefrenceTableID from '../MemberLogin/Infotect/User/RefrenceTableID/RefrenceTableID';
 import Valueper from '../MemberLogin/Infotect/User/Value_per/Value_per';
@@ -90,6 +91,18 @@ import TransactionTable from '../MemberLogin/AdminPanel/Transaction/TransactionT
 import TransactionView from '../MemberLogin/AdminPanel/Transaction/TransactionView/TransactionView';
 import TransactionUpdate from '../MemberLogin/AdminPanel/Transaction/TransactionUpdate/TransactionUpdate'
 import Dashboard from '../MemberLogin/AdminPanel/Transaction/dashboard';
+import Transactionmaster from '../MemberLogin/AdminPanel/Transaction/Tmaster';
+import AddRecords from '../MemberLogin/AdminPanel/Transaction/TMaster/AddTrecords';
+import Stock from '../MemberLogin/AdminPanel/Transaction/stock'
+import AddStock from '../MemberLogin//AdminPanel/Transaction/StockExchange/AddStock'
+import StockUpdate from '../MemberLogin/AdminPanel/Transaction/StockExchange/StockUpdate'
+import StockView from '../MemberLogin/AdminPanel/Transaction/StockExchange/StockView'
+import TMasterUpdate from '../MemberLogin/AdminPanel/Transaction/TMaster/TrecordsUpdate';
+import TMasterView from '../MemberLogin/AdminPanel/Transaction/TMaster/TrecordsView'
+//////////////chatbot///////////////////
+import Recruit from '../MemberLogin/Infotect/User/Chatbot/chatbot'
+import StudentRegistration from '../MemberLogin/Infotect/User/StudentRegistration/StudRegLink'
+import UpdateRegPassword from '../MemberLogin/Infotect/User/StudentRegistration/UpdateRegPass'
 
 const MainCommon = () => {
    return (
@@ -122,7 +135,6 @@ const MainCommon = () => {
                      <Route path='incentive' element={<Incentive />} />
                      <Route path='incentiveupdate' element={<Update />} />
                      <Route path='memberaddgroup' element={<AddgroupMember />} />
-                     <Route path='groupmarge' element={<NestedGroup />} />
                      <Route path='joingroup' element={<GroupTables />} />
                      <Route path='network' element={<RefrenceTableID />} />
                      <Route path='valueper' element={<Valueper />} />
@@ -134,6 +146,13 @@ const MainCommon = () => {
                      <Route path="reset-password/:token" element={<ResetPassword />} />
                      <Route path='viewallopportunity' element={<ViewAllOpportunity/>} />
                      <Route path='userallopportunity' element={<UserOpportunity/>} />
+                     {/* chatbot */}
+                     <Route path="chatbot" element={<Recruit />} />
+
+                     <Route path="studentreglink" element={<StudentRegistration />} />
+                     <Route path="updateregpass" element={<UpdateRegPassword />} />
+                     
+                     
 
                   </Route>
 
@@ -195,6 +214,17 @@ const MainCommon = () => {
                      <Route path='viewtransaction/:transactionid' element={<TransactionView />} />
                      <Route path='transactionupdate/:transactionid' element={<TransactionUpdate />} />
                      <Route path='dashboard' element={<Dashboard />} />
+                     <Route path='transactionmaster' element={<Transactionmaster/>} />
+                     <Route path="TmasterUpdate/:tmasterid" element={<TMasterUpdate />} />
+                     <Route path='Tmasterview/:tmasterid' element={<TMasterView />} />
+                     <Route path='addmaster' element={<AddRecords />} />
+                     <Route path='Stockexchange' element={<Stock/>} />
+                     <Route path='addstock' element={<AddStock />} />
+                     <Route path="Stockupdate/:stockid" element={<StockUpdate />} />
+                     <Route path="Stockview/:stockid" element={<StockView />} />
+
+                     <Route path='groupmerge' element={<NestedGroup />} />
+                     <Route path='groupmergertable' element={<Groupmergetable />} />
                   </Route>
                </Routes>
             </Router>

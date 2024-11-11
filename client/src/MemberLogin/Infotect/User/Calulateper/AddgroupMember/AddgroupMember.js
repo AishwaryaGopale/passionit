@@ -29,9 +29,6 @@ const [group,setGroup]=useState([]);
     })
   }
 
-
-
-
   const Addidea = () => {
     if (
       !group_id.current.value ||
@@ -59,6 +56,9 @@ const [group,setGroup]=useState([]);
     });
   };
 
+  const GoBack = () => {
+    navigate("/user/membergroup");
+};
 
   const Refernce = () => {
     navigate("/student/ideationrefrence")
@@ -111,6 +111,15 @@ const [group,setGroup]=useState([]);
                       <div class="inline-flex items-end gap-x-3">
                         <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onClick={() => Addidea()}>Submit</button>
                       </div>
+
+                      <div className="mt-6">
+                <button
+                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                    onClick={() => GoBack()}
+                >
+                    Go Back
+                </button>
+            </div>
                      
                     </div>
                   </div>

@@ -9,13 +9,18 @@ const nodemailer = require('nodemailer');
 const schedule = require('node-schedule');
 const xlsx =require('xlsx')
 const app = express();
+const crypto = require("crypto");
+
+// other imports
+
 // const port = 3001;
 app.use(cors());
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const {Sequelize,DataTypes} = require('sequelize');
 const JWT_SECRET = "Hjkl2345Olkj0987Ooiuyhjnb0987Nbvcty12fgh675redf23";
-
+const dotenv = require('dotenv');
+require ('dotenv').config()
 
 // Database configuration
 const pool = new Pool({
@@ -26,7 +31,6 @@ const pool = new Pool({
 
   port: 5432,
 });
-//Jut to add commit
 
 // Middleware
 app.use(bodyParser.json());
@@ -724,7 +728,6 @@ app.get('/passion-api/get/researchref/:id', async (req, res) => {
 });
 
 
-
 // Update a specific student by ID
 app.put('/passion-api/put/researchref/:id', async (req, res) => {
   try {
@@ -746,7 +749,6 @@ app.put('/passion-api/put/researchref/:id', async (req, res) => {
 });
 
 
-
 // Delete a specific student by ID
 app.delete('/passion-api/delete/researchref/:id', async (req, res) => {
   try {
@@ -765,8 +767,6 @@ app.delete('/passion-api/delete/researchref/:id', async (req, res) => {
 });
 
 
-
-
 // Get all ecosystems
 app.get('/passion-api/ecosystems', async (req, res) => {
   try {
@@ -777,7 +777,6 @@ app.get('/passion-api/ecosystems', async (req, res) => {
     res.status(500).send('Internal Server Error');
   }
 });
-
 
 
 // Get a specific ecosystem by ID
@@ -795,7 +794,6 @@ app.get('/passion-api/ecosystems/:id', async (req, res) => {
     res.status(500).send('Internal Server Error');
   }
 });
-
 
 
 app.post('/passion-api/ecosystems', async (req, res) => {
@@ -843,9 +841,6 @@ app.post('/passion-api/ecosystems', async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
-
-
-
 
 // PUT endpoint for updating an existing ecosystem
 app.put('/passion-api/ecosystems/id', async (req, res) => {
@@ -899,8 +894,6 @@ app.put('/passion-api/ecosystems/id', async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
-
-
 
 
 // DELETE endpoint for deleting an existing ecosystem
@@ -1056,19 +1049,35 @@ app.post('/passion-api/add/members/studentids', async (req, res) => {
       technology: null
     };
 
+    // Combine default values with the provided student ID
     const dataToInsert = { ...defaultValues, id_student };
     const currentDate = new Date();
+
+    // Prepare SQL query
     const result = await pool.query(
-      'INSERT INTO members  (member_name, member_code, member_phone, member_email, member_password, date_of_registration, photo_image, resume, id_card_proof, other_documents, geolocation, specialisation, address, city, state, pincode, technology, id_student) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18) RETURNING *',
-      [dataToInsert.member_name, dataToInsert.member_code, dataToInsert.member_phone, dataToInsert.member_email, dataToInsert.member_password, currentDate, dataToInsert.photo_image, dataToInsert.resume, dataToInsert.id_card_proof, dataToInsert.other_documents, dataToInsert.geolocation, dataToInsert.specialisation, dataToInsert.address, dataToInsert.city, dataToInsert.state, dataToInsert.pincode, dataToInsert.technology, id_student]
+      `INSERT INTO members (
+        member_name, member_code, member_phone, member_email, member_password, date_of_registration, photo_image,
+        resume, id_card_proof, other_documents, geolocation, specialisation, address, city, state, pincode,
+        technology, id_student
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
+      RETURNING *`,
+      [
+        dataToInsert.member_name, dataToInsert.member_code, dataToInsert.member_phone, dataToInsert.member_email,
+        dataToInsert.member_password, currentDate, dataToInsert.photo_image, dataToInsert.resume,
+        dataToInsert.id_card_proof, dataToInsert.other_documents, dataToInsert.geolocation,
+        dataToInsert.specialisation, dataToInsert.address, dataToInsert.city, dataToInsert.state,
+        dataToInsert.pincode, dataToInsert.technology, id_student
+      ]
     );
 
+    // Respond with the new member data
     res.json(result.rows[0]);
   } catch (error) {
-    console.error(error);
+    console.error('Error inserting member data', error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
+
 ////////////////////////////////
 app.post('/passion-api/api/members/networks', async (req, res) => {
   const { member_id, member_name, member_password, member_email, class_member } = req.body;
@@ -1085,49 +1094,6 @@ app.post('/passion-api/api/members/networks', async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
-////////////////////////////////////////////////////////////////
-// Set up multer storage
-// const storage = multer.diskStorage({
-//   destination: function (req, file, cb) {
-//     cb(null, 'uploads/'); // Specify the folder where files will be stored
-//   },
-//   filename: function (req, file, cb) {
-//     cb(null, Date.now() + '-' + file.originalname); // Rename files to prevent collisions
-//   }
-// });
-
-// // Create the multer instance
-// const upload = multer({ storage: storage });
-
-// app.post('/passion-api/api/add/members', upload.single('photo'), async (req, res) => {
-//   const { member_name, member_code, member_phone, member_email, member_password, date_of_expire, photo_image, resume, id_card_proof, other_documents, geolocation, specialisation, address, city, state, pincode, technology, roll_number, class_member, discipline, membergroup, membercategory, membertype, id_student, organization_name, designation_role, country, interested_research, interested_startup, interested_investments, interested_mentoring, membership_frequency_renewal, skills } = req.body;
-//   const photo = req.file.filename;
-//   try {
-//     const client = await pool.connect();
-//     const date_of_registration = moment().format('YYYY-MM-DD');
-//     const dateOfRegistration = moment(date_of_registration);
-//     const dateOfExpire = moment(date_of_expire);
-//     const membership_duration = dateOfExpire.diff(dateOfRegistration, 'days');
-//     const interested_membership = membership_duration > 0;
-//     const membership_status = interested_membership ? 'active' : 'inactive';
-//     const result = await client.query(
-//       'INSERT INTO members (member_name, member_code, member_phone, member_email, member_password, date_of_registration, date_of_expire, photo_image, resume, id_card_proof, other_documents, geolocation, specialisation, address, city, state, pincode, technology, roll_number, class_member, discipline, membergroup, membercategory, membertype, id_student, organization_name, designation_role, country, interested_membership, interested_research, interested_startup, interested_investments, interested_mentoring, membership_duration, membership_frequency_renewal, membership_status, skills, photo) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31, $32, $33, $34, $35, $36, $37, $38) RETURNING *',
-//       [member_name, member_code, member_phone, member_email, member_password, date_of_registration, date_of_expire, photo_image, resume, id_card_proof, other_documents, geolocation, specialisation, address, city, state, pincode, technology, roll_number, class_member, discipline, membergroup, membercategory, membertype, id_student, organization_name, designation_role, country, interested_membership, interested_research, interested_startup, interested_investments, interested_mentoring, membership_duration, membership_frequency_renewal, membership_status, skills, photo]
-//     );
-
-//     const newMember = result.rows[0];
-//     client.release();
-
-//     sendConfirmationEmail(newMember);
-
-//     res.status(201).json(newMember);
-//     console.log('Member added successfully');
-//   } catch (error) {
-//     console.error('Error adding member', error);
-//     res.status(500).json({ error: 'Internal Server Error' });
-//   }
-// });
-
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -1182,6 +1148,7 @@ app.post('/passion-api/api/add/members', upload.single('photo'), async (req, res
       );
 
       const newMember = result.rows[0];
+      console.log(newMember)
       client.release();
 
       // Send confirmation email function
@@ -1199,20 +1166,19 @@ function sendConfirmationEmail(member) {
   // Implementation for sending confirmation email
 }
 
-
 ///////////////////////////////////////
 
 function sendConfirmationEmail(user) {
   const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
-      user: 'jadhavhemantbalkrushna@gmail.com',
-      pass: 'hyct mbxz cmhj rimd',
+      user: 'passionit.research@gmail.com',
+      pass: 'kxwv cpet unur fjax',
     },
   });
 
   const mailOptions = {
-    from: 'jadhavhemantbalkrushna@gmail.com',
+    from: 'passionit.research@gmail.com',
     to: user.member_email,
     subject: 'Registration Confirmation',
     text: `Dear ${user.member_name},\n\nThank you for registering. Your registration was successful. your username is ${user.member_email} and password is ${user.member_password}`,
@@ -1281,38 +1247,7 @@ const members = sequelize.define(
   }
 );
 
-////////////////login /////////////
-// app.post('/passion-api/api/login', async (req, res) => {
-//   const { member_email, member_password } = req.body;
-
-//   try {
-//     const member = await members.findOne({ where: { member_email } });
-
-//     if (!member) {
-//       return res.status(404).json({ error: 'User not found' });
-//     }
-
-//     if (member.flag === true) {
-//       return res.status(403).json({ error: 'Your membership is inactive. Please contact support for assistance.' });
-//     }
-
-//     const isMatch = await bcrypt.compare(member_password, member.member_password);
-
-//     if (!isMatch) {
-//       return res.status(401).json({ error: 'Invalid credentials' });
-//     }
-//     // console.log(member)
-
-//     // Sign the JWT with memberId and member_name
-//     const token = jwt.sign({ memberId: member.id }, JWT_SECRET, { expiresIn: '1h' });
-
-//     return res.status(200).json({ message: 'Login successful', id: member.id, token });
-//   } catch (error) {
-//     console.error('Error during login', error);
-//     res.status(500).json({ error: 'Internal Server Error' });
-//   }
-// });
-
+////////////////login/////////////////
 app.post('/passion-api/api/login', async (req, res) => {
   const { member_email, member_password } = req.body;
 
@@ -1332,12 +1267,7 @@ app.post('/passion-api/api/login', async (req, res) => {
     if (!validPassword) {
       return res.status(400).send({ message: 'Invalid email or password' });
     }
-
-    // Check if the user is verified
-    // if (member.is_verified !== true) {
-    //   return res.status(400).send({ message: 'Your account is not verified. Please check your email for verification.' });
-    // }
-
+    
     // Generate a JWT token with user role
     const token = jwt.sign(
       {
@@ -1861,8 +1791,6 @@ app.delete('/passion-api/api/delete/interested/:id', async (req, res) => {
   }
 });
 
-//////////////////////////////////////////
-
 
 ////////////////////////////////
 app.post('/passion-api/post/api/selection_status/result', async (req, res) => {
@@ -2188,8 +2116,7 @@ app.post('/passion-api/api/opportunity', opportunityUpload, async (req, res) => 
   }
 });
 
-
-///////////////////////////////////////////////////////////////
+///////////////////////upload file///////////////////////////
 app.post("/passion-api/csvupload", upload.single("file"), async (req, res) => {
   try {
     if (!req.file) {
@@ -2200,7 +2127,7 @@ app.post("/passion-api/csvupload", upload.single("file"), async (req, res) => {
     const sheetName = workbook.SheetNames[0];
     const excelData = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName]);
 
-    // Convert Excel serial number to date
+    // Helper function to convert Excel serial date to JS date
     const excelDateToJSDate = (serial) => {
       const utc_days = Math.floor(serial - 25569);
       const utc_value = utc_days * 86400;
@@ -2208,7 +2135,14 @@ app.post("/passion-api/csvupload", upload.single("file"), async (req, res) => {
       return new Date(date_info.getFullYear(), date_info.getMonth(), date_info.getDate());
     };
 
-    // Process excelData to remove duplicates
+    // Nodemailer setup for sending emails
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL,
+        pass: process.env.EMAIL_PASSWORD,
+      }
+    });
     for (const row of excelData) {
       const {
         opportunity_name,
@@ -2218,17 +2152,18 @@ app.post("/passion-api/csvupload", upload.single("file"), async (req, res) => {
         opportunity_end_date,
         opportunity_problem_statement,
         opportunity_expected_solution,
-        projectname
+        projectname,
+        email
       } = row;
 
-      // Convert date fields if they are in serial format
+      // Convert date fields if in serial format
       const formatted_start_date = typeof opportunity_start_date === 'number' ? excelDateToJSDate(opportunity_start_date) : opportunity_start_date;
       const formatted_end_date = typeof opportunity_end_date === 'number' ? excelDateToJSDate(opportunity_end_date) : opportunity_end_date;
 
-      // Check if the entry already exists in the Opportunities table
+      // Check if the opportunity already exists in the Opportunities table
       const OpportunitiesResult = await pool.query(
         `SELECT COUNT(*) AS count FROM Opportunities WHERE opportunity_name = $1 AND opportunity_description = $2 AND opportunity_provider = $3 AND opportunity_start_date = $4
-        AND opportunity_end_date=$5 AND opportunity_problem_statement=$6 AND opportunity_expected_solution=$7 AND projectname=$8`,
+        AND opportunity_end_date=$5 AND opportunity_problem_statement=$6 AND opportunity_expected_solution=$7 AND projectname=$8 AND email=$9`,
         [
           opportunity_name,
           opportunity_description,
@@ -2237,14 +2172,16 @@ app.post("/passion-api/csvupload", upload.single("file"), async (req, res) => {
           formatted_end_date,
           opportunity_problem_statement,
           opportunity_expected_solution,
-          projectname
+          projectname,
+          email
         ]
       );
+
       const OpportunitiesCount = parseInt(OpportunitiesResult.rows[0].count);
       if (OpportunitiesCount === 0) {
         // Insert into Opportunities table
         await pool.query(
-          `INSERT INTO Opportunities (opportunity_name, opportunity_description, opportunity_provider, opportunity_start_date, opportunity_end_date, opportunity_problem_statement, opportunity_expected_solution, projectname) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
+          `INSERT INTO Opportunities (opportunity_name, opportunity_description, opportunity_provider, opportunity_start_date, opportunity_end_date, opportunity_problem_statement, opportunity_expected_solution, projectname, email) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
           [
             opportunity_name,
             opportunity_description,
@@ -2253,20 +2190,41 @@ app.post("/passion-api/csvupload", upload.single("file"), async (req, res) => {
             formatted_end_date,
             opportunity_problem_statement,
             opportunity_expected_solution,
-            projectname
+            projectname,
+            email
           ]
         );
       }
-     }
 
-    res.status(200).json({ message: "Data inserted successfully" });
+      // Split emails by comma, trim, and process each
+      const emails = email.split(",").map(e => e.trim());
+      for (const singleEmail of emails) {
+        // Check if the email already exists in the Member table
+        const memberResult = await pool.query(`SELECT COUNT(*) AS count FROM members WHERE member_email = $1`, [singleEmail]);
+        if (parseInt(memberResult.rows[0].count) === 0) {
+          // Generate a random password
+          const randomPassword = crypto.randomBytes(8).toString("hex");
+    
+          // Hash the password
+          const hashedPassword = await bcrypt.hash(randomPassword, 10); // 10 is the salt rounds
+          await pool.query(`INSERT INTO members (member_email, member_password) VALUES ($1, $2)`, [singleEmail, hashedPassword]);
+          // Send email with credentials
+          const mailOptions = {
+            from: "passionit.research@gmail.com",
+            to: singleEmail,
+            subject: "Your New Account Credentials",
+            text: `Dear User,\n\nYour account has been created successfully.\n\nUsername: ${singleEmail}\nPassword: ${randomPassword}\n\nPlease use the following link to complete your registration:\n\nLINK:${process.env.CLIENT_URL}\n\nAfter logging in, please remember to change your password and Update Your Information\n\nBest Regards,\nYour Team`
+          };          
+          await transporter.sendMail(mailOptions);
+        } }  }
+      
+    res.status(200).json({ message: "Data inserted and emails sent successfully" });
   } catch (error) {
     console.error("Error uploading file:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 });
 
-////////////////////////////////////////////////////////
 
 // Function to update opportunity statuses
 const updateOpportunityStatus = async () => {
@@ -2514,8 +2472,8 @@ app.post('/passion-api/send-email', async (req, res) => {
   let transporter = nodemailer.createTransport({
     service: 'Gmail',
     auth: {
-      user: 'sakshikadam1892001@gmail.com',
-      pass: 'hjfg apya uqde svpk',
+      user: 'passionit.research@gmail.com',
+      pass: 'kxwv cpet unur fjax',
     }
   });
 
@@ -2527,7 +2485,7 @@ app.post('/passion-api/send-email', async (req, res) => {
     text += '\nFor details, please log on to our site.\n\nThanks,\nThe pcombinator and passionit team';
 
     let mailOptions = {
-      from: 'sakshikadam1892001@gmail.com',
+      from: 'passionit.research@gmail.com',
       to: recipientEmails.join(','),
       subject: 'Opportunity',
       text: text
@@ -2994,8 +2952,6 @@ app.post("/passion-api/reference/csvupload", upload.single("file"), async (req, 
   }
 });
 
-
-
 // ///////////////////////////////
 app.post('/passion-api/api/resourcemaster', async (req, res) => {
   try {
@@ -3082,13 +3038,13 @@ app.post('/passion-api/send-emailfour/ids', async (req, res) => {
     const transporter = nodemailer.createTransport({
       service: 'Gmail',
       auth: {
-        user: "jadhavhemantbalkrushna@gmail.com",
-        pass: "hyct mbxz cmhj rimd",
+        user: "passionit.research@gmail.com",
+        pass: "kxwv cpet unur fjax",
       }
     });
     const { email1, email2, email3, email4 } = req.body;
     const mailOptions = {
-      from: 'jadhavhemantbalkrushna@gmail.com',
+      from: 'passionit.research@gmail.com',
       to: [email1, email2, email3, email4].filter(email => email !== ''),
       subject: 'Test Email',
       text: 'This is a test email sent from Node.js.'
@@ -3108,13 +3064,13 @@ app.post('/passion-api/send-email/single/usr/data', async (req, res) => {
     let transporter = nodemailer.createTransport({
       service: 'Gmail',
       auth: {
-        user: "jadhavhemantbalkrushna@gmail.com",
-        pass: "hyct mbxz cmhj rimd",
+        user: "passionit.research@gmail.co",
+        pass: "kxwv cpet unur fjax",
       },
     });
 
     let mailOptions = {
-      from: "jadhavhemantbalkrushna@gmail.com",
+      from: "passionit.research@gmail.co",
       to: recipientEmail,
       subject: "check",
       text: "testing",
@@ -3211,21 +3167,44 @@ app.delete('/passion-api/delete/api/opportunity_incentive/:id', async (req, res)
 });
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
+
+const fs = require('fs');
+
+// Ensure the 'logos' directory exists when the server starts
+const logosDir = path.join(__dirname, 'logos');
+if (!fs.existsSync(logosDir)) {
+  fs.mkdirSync(logosDir, { recursive: true });
+}
+
 const storage1 = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, 'logos');
+    cb(null, logosDir);
   },
   filename: function (req, file, cb) {
     cb(null, Date.now() + '-' + file.originalname);
   }
 });
+
 const uploadS = multer({ storage: storage1 });
+
+// const storage1 = multer.diskStorage({
+//   destination: function (req, file, cb) {
+//     cb(null, 'logos');
+//   },
+//   filename: function (req, file, cb) {
+//     cb(null, Date.now() + '-' + file.originalname);
+//   }
+// });
+// const uploadS = multer({ storage: storage1 });
+
+//////////////////////post add group//////////////////
 app.post('/passion-api/api/create-group', uploadS.single('groupLogo'), async (req, res) => {
   const { memberid, groupcode, groupname, groupcaption, groupwebsitelink, group_owner, email, phone, transactionvalue } = req.body;
   const groupLogoPath = req.file ? req.file.path : null;
   try {
     const client = await pool.connect();
     const query = `INSERT INTO group_s (memberid, groupcode, groupname, groupcaption, groupwebsitelink, group_owner, email, phone, transactionvalue, grouplogo) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`;
+
     const values = [memberid, groupcode, groupname, groupcaption, groupwebsitelink, group_owner, email, phone, transactionvalue, groupLogoPath];
     await client.query(query, values);
     client.release();
@@ -3402,22 +3381,55 @@ app.delete('/passion-api/delete/api/group_member/:id', async (req, res) => {
 });
 /////////////////////////////////////////////////////////////////////////////////////////////////
 app.post('/passion-api/post/api/merged_groups', uploadS.single('groupLogo'), async (req, res) => {
+  console.log("Request Body:", req.body); // Log incoming request data
 
-  const { member_id, group_name, other_group_name, other_group_value, group_owner } = req.body;
+  const { 
+      member_id, 
+      group_name, 
+      other_group_name = '', // Provide default value
+      group_owner, 
+      new_group, 
+      formed_date = new Date() // Default to current date if not provided
+  } = req.body;
+
+  // Check if the required fields are present
+  if (!member_id || !group_name || !group_owner || !new_group) {
+      console.log('Missing required fields:', { member_id, group_name, group_owner, new_group });
+      return res.status(400).json({ error: 'Missing required fields' });
+  }
+
+  // File path for the uploaded file, if it exists
   const groupLogoPath = req.file ? req.file.path : null;
-  const formed_date = new Date().toISOString();
+
   try {
-    const client = await pool.connect();
-    const query = `INSERT INTO merged_groups (member_id, group_name,other_group_name,other_group_value,group_owner, groupLogoPath,formed_date) VALUES ($1, $2, $3, $4, $5, $6,$7)`;
-    const values = [member_id, group_name, other_group_name, other_group_value, group_owner, groupLogoPath, formed_date];
-    await client.query(query, values);
-    client.release();
-    res.status(201).json({ message: 'Group created successfully' });
+      const client = await pool.connect();  // Connect to the database
+
+      const query = `
+          INSERT INTO merged_groups 
+          (member_id, group_name, other_group_name, group_owner, new_group, "groupLogoPath", formed_date) 
+          VALUES ($1, $2, $3, $4, $5, $6, $7)
+      `;
+      
+      const values = [
+          member_id, 
+          group_name, 
+          other_group_name,  
+          group_owner, 
+          new_group, 
+          groupLogoPath, 
+          formed_date
+      ];
+
+      await client.query(query, values); // Insert data into the database
+      client.release();                  // Release the database connection
+
+      res.status(201).json({ message: 'Group created successfully' }); // Send success response
   } catch (error) {
-    console.error('Error creating group:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
+      console.error('Error creating group:', error);     // Log error to console
+      res.status(500).json({ error: 'Internal Server Error' });  // Send error response
   }
 });
+
 
 // Get all groups
 app.get('/passion-api/get/api/merged_groups', async (req, res) => {
@@ -3467,24 +3479,25 @@ app.put('/passion-api/api/merged_groups/:id', async (req, res) => {
 });
 
 // Delete a specific student by ID
-app.delete('/passion-api/api/merged_groups/:id', async (req, res) => {
-  const groupId = req.params.id;
+app.delete('/passion-api/delete/group_merged/:id', async (req, res) => {
   try {
-    const client = await pool.connect();
-    await client.query('DELETE FROM group_member WHERE group_id = $1', [groupId]);
-    const result = await client.query('DELETE FROM group_s WHERE id = $1 RETURNING *', [groupId]);
-    const deletedGroup = result.rows[0];
-    if (deletedGroup) {
-      res.status(200).json({ message: 'Group deleted successfully', deletedGroup });
-    } else {
+    const { id } = req.params;
+    const result = await pool.query('DELETE FROM merged_groups WHERE id = $1 RETURNING *', [id]);
+
+    if (result.rows.length === 0) {
       res.status(404).json({ error: 'Group not found' });
+    } else {
+      res.json({ message: 'Group deleted successfully' });
     }
-    client.release();
   } catch (error) {
-    console.error('Error deleting group', error);
+    console.error(error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
+
+
+
+
 ////////////////////////////////////////////////////////////////////////////////////////////////
 app.post('/passion-api/post/api/values_per', async (req, res) => {
   try {
@@ -3622,6 +3635,19 @@ app.get('/passion-api/get/transaction/:transactionid', async (req, res) => {
   }
 });
 
+//FETCH BY NAME
+app.get('/passion-api/get/transactiontype/:transactiontype', async (req, res) => {
+  const  transactiontype = req.params.transactiontype;
+
+  try {
+    const result = await pool.query('SELECT * FROM transaction_master WHERE transactiontype=$1',[transactiontype]);
+    res.json(result.rows);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 //delete transaction
 app.delete('/passion-api/api/delete/transaction/:transactionid', async (req, res) => {
   const  transactionid  = req.params.transactionid;
@@ -3657,8 +3683,10 @@ app.delete('/passion-api/api/delete/transaction/:transactionid', async (req, res
   }
 });
 
+
+
 ////update api for transaction/////////////
-app.put('/passion-api/api/update/transaction/:transactionid', async (req, res) => {
+app.put('/passion-api/transaction/:transactionid', async (req, res) => {
   const transactionid = req.params.transactionid;
   const {
       vouchercode,
@@ -3681,82 +3709,432 @@ app.put('/passion-api/api/update/transaction/:transactionid', async (req, res) =
       currency,
       creditdays,
       designation,
+      stockexchange,
       transactiontype,
   } = req.body;
+
+  console.log("Received transaction update for ID:", transactionid);
 
   try {
       const client = await pool.connect();
 
       const result = await client.query(
-          `UPDATE public.transaction
-          SET 
-              vouchercode = $1,
-              date = $2,
-              member_name = $3,
-              membertype = $4,
-              membercategory = $5,
-              opportunity_id = $6,
-              opportunity_name = $7,
-              opportunity_work_type = $8,
-              ordervalue = $9,
-              percentage = $10,
-              amount = $11,
-              referencemember = $12,
-              paymentstatus = $13,
-              bankname = $14,
-              accountholder = $15,
-              accountnum = $16,
-              ifsccode = $17,
-              currency = $18,
-              creditdays = $19,
-              designation = $20,
-              transactiontype = $21,
-          WHERE transactionid = $23
-          RETURNING *`,
-          [
-              vouchercode,
-              date,
-              member_name,
-              membertype,
-              membercategory,
-              opportunity_id,
-              opportunity_name,
-              opportunity_work_type,
-              ordervalue,
-              percentage,
-              amount,
-              referencemember,
-              paymentstatus,
-              bankname,
-              accountholder,
-              accountnum,
-              ifsccode,
-              currency,
-              creditdays,
-              designation,
-              transactiontype,           
-              transactionid,
-          ]
-      );
+        `UPDATE public.transaction
+        SET 
+            vouchercode = $1,
+            date = $2,
+            member_name = $3,
+            membertype = $4,
+            membercategory = $5,
+            opportunity_id = $6,
+            opportunity_name = $7,
+            opportunity_work_type = $8,
+            ordervalue = $9,
+            percentage = $10,
+            amount = $11,
+            referencemember = $12,
+            paymentstatus = $13,
+            bankname = $14,
+            accountholder = $15,
+            accountnum = $16,
+            ifsccode = $17,
+            currency = $18,
+            creditdays = $19,
+            designation = $20,
+            stockexchange = $21,
+            transactiontype = $22
+        WHERE transactionid = $23
+        RETURNING *`,
+        [
+            vouchercode,
+            date,
+            member_name,
+            membertype,
+            membercategory,
+            opportunity_id,
+            opportunity_name,
+            opportunity_work_type,
+            ordervalue,
+            percentage,
+            amount,
+            referencemember,
+            paymentstatus,
+            bankname,
+            accountholder,
+            accountnum,
+            ifsccode,
+            currency,
+            creditdays,
+            designation,
+            stockexchange,
+            transactiontype,
+            transactionid,
+        ]
+    );    
 
       const updatedTransaction = result.rows[0];
       client.release();
 
       if (updatedTransaction) {
-          res.status(200).json({
-              message: 'Transaction updated successfully',
-              transaction: updatedTransaction
-          });
-          console.log('Transaction updated successfully');
+        res.json(updatedTransaction);
       } else {
-          res.status(404).json({ message: 'Transaction not found' });
+        res.status(404).json({ error: 'Transaction entry not found' });
       }
-  } catch (error) {
-      console.error('Error updating transaction', error);
+    } catch (error) {
+      console.error('Error updating transaction entry', error);
       res.status(500).json({ error: 'Internal Server Error' });
+    }
+  });
+
+//////////transaction master/////////////
+// GET API to fetch all records from transaction_master
+app.get('/passion-api/get/transactionmaster', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM transaction_master');
+    res.status(200).json(result.rows);
+  } catch (error) {
+    console.error('Error fetching transactions:', error);
+    res.status(500).json({ error: 'Error fetching transactions' });
   }
 });
 
+app.get('/passion-api/get/tmaster/:tmasterid', async (req, res) => {
+  const  tmasterid = req.params.tmasterid;
+
+  try {
+    const result = await pool.query('SELECT * FROM transaction_master WHERE tmasterid=$1',[tmasterid]);
+    res.json(result.rows);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+// POST API to insert a new record into transaction_master
+app.post('/passion-api/post/transactionmaster', async (req, res) => {
+  const {transactiontype, percentage, amount } = req.body;
+
+  try {
+    const result = await pool.query(
+      'INSERT INTO public.transaction_master (transactiontype, percentage, amount) VALUES ($1, $2, $3) RETURNING *',
+      [transactiontype, percentage, amount]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (error) {
+    console.error('Error inserting data:', error);
+    res.status(500).json({ error: 'Error inserting data' });
+  }
+});
+
+///////////////////update////////////////
+app.put('/passion-api/transactionmaster/:tmasterid', async (req, res) => {
+  const id = req.params.tmasterid; // Use tmasterid instead of id
+  const { transactiontype, percentage, amount, stockexchange } = req.body;
+
+  try {
+    const client = await pool.connect();
+    const result = await client.query(
+      'UPDATE transaction_master SET transactiontype = $1, percentage = $2, amount = $3, stockexchange = $4 WHERE tmasterid = $5 RETURNING *',
+      [transactiontype, percentage, amount, stockexchange, id]
+    );
+    const updatedmasterdata = result.rows[0];
+    client.release();
+
+    if (updatedmasterdata) {
+      res.json(updatedmasterdata);
+    } else {
+      res.status(404).json({ error: 'Master entry not found' });
+    }
+  } catch (error) {
+    console.error('Error updating entry', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+app.delete('/passion-api/api/transactionmaster/:transactionid', async (req, res) => {
+  const { transactionid } = req.params;
+
+  try {
+    const result = await db.query('DELETE FROM transactionmaster WHERE transactionid = $1', [transactionid]);
+
+    if (result.rowCount === 0) {
+      return res.status(404).send('Transaction not found'); // Resource not found
+    }
+    res.status(200).send('Transaction deleted successfully');
+  } catch (error) {
+    console.error('Error deleting transaction:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+/////////////////stock exchange////////////
+app.post('/passion-api/post/stockexchange', async (req, res) => {
+  const { stockexchange, facevalue, currency } = req.body;
+
+  try {
+    const result = await pool.query(
+      'INSERT INTO public.stockexchange (stockexchange, facevalue, currency) VALUES ($1, $2, $3) RETURNING *',
+      [stockexchange, facevalue, currency]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (error) {
+    console.error('Error inserting data:', error);
+    res.status(500).json({ error: 'Error inserting data' });
+  }
+});
+
+
+// GET API to fetch all records from the stockexchange table
+app.get('/passion-api/get/stockexchange', async (req, res) => {
+  try {
+      const result = await pool.query('SELECT * FROM public.stockexchange');
+      res.status(200).json(result.rows);
+  } catch (error) {
+      console.error('Error fetching data:', error);
+      res.status(500).json({ error: 'Error fetching data' });
+  }
+});
+
+app.get('/passion-api/get/stockexchange/:stockid', async (req, res) => {
+  const  stockid = req.params.stockid;
+
+  try {
+    const result = await pool.query('SELECT * FROM stockexchange WHERE stockid=$1',[stockid]);
+    res.json(result.rows);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+// Update stock exchange entry
+app.put('/passion-api/stockexchange/:stockid', async (req, res) => {
+  const stockid = req.params.stockid; // Ensure correct stockid here
+  const { stockexchange, facevalue, currency } = req.body;
+
+  console.log("Received stock update for ID:", stockid); // Debug log
+
+  try {
+    const client = await pool.connect();
+    const result = await client.query(
+      'UPDATE stockexchange SET stockexchange = $1, facevalue = $2, currency = $3 WHERE stockid = $4 RETURNING *',
+      [stockexchange, facevalue, currency, stockid]
+    );
+    const updatedStock = result.rows[0];
+    client.release();
+
+    if (updatedStock) {
+      res.json(updatedStock);
+    } else {
+      res.status(404).json({ error: 'Stock exchange entry not found' });
+    }
+  } catch (error) {
+    console.error('Error updating stock exchange entry', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+// Delete stock exchange entry
+app.delete('/passion-api/api/stockexchange/:stockid', async (req, res) => {
+  const { stockid } = req.params;
+
+  try {
+    const result = await pool.query('DELETE FROM stockexchange WHERE stockid = $1', [stockid]); // Use pool instead of db
+
+    if (result.rowCount === 0) {
+      return res.status(404).send('Stock not found');
+    }
+    res.status(200).send('Stock deleted successfully');
+  } catch (error) {
+    console.error('Error deleting stock:', error); // Log the error
+    res.status(500).send('Internal Server Error: ' + error.message); // Return detailed error response
+  }
+});
+
+////////////////////CHatBOt/////////////////
+ //////////////recruitebot resume parser///////////////////
+ app.get('/passion-api/resumeparserget', (req, res) => {
+  const sqlGet = 'SELECT * FROM resumeparser';
+  pool.query(sqlGet, (error, result) => {
+    if (error) {
+      console.error('Error fetching data:', error);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+    res.json(result.rows);
+  });
+});
+
+// Handle file upload and data insertion
+app.post('/passion-api/resumeparserpost', upload.single('uploadfile'), (req, res) => {
+try {
+  const { jobdescription, promptmsg } = req.body;
+  const uploadfile = req.file;
+
+  if (!uploadfile) {
+    return res.status(400).json({ error: 'No file uploaded' });
+  }
+
+  if (!jobdescription || !promptmsg) {
+    return res.status(400).json({ error: 'Job description and prompt message are required' });
+  }
+
+  const sqlInsert = 'INSERT INTO resumeparser (jobdescription, uploadfile, promptmsg) VALUES ($1, $2, $3)';
+  const values = [jobdescription, uploadfile.originalname, promptmsg];
+
+  pool.query(sqlInsert, values, (error) => {
+    if (error) {
+      console.error('Error inserting data:', error);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+    res.status(200).json({ message: 'Data inserted successfully' });
+  });
+} catch (error) {
+  console.error('Error processing request:', error);
+  res.status(500).json({ error: 'Internal server error' });
+}
+});
+
+//**********************screening********************* */
+   app.get('/passion-api/screeningget', (req, res) => {
+   const sqlGet = 'SELECT * from screening';
+   pool.query(sqlGet,(error,result)=>{
+   if (error) {
+      console.error('Error fetching data:', error);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+      res.json(result.rows);
+  }
+  );
+});
+
+app.post('/passion-api/screeningpost', upload.single('uploadfile'), async (req, res) => {
+try {
+  const { criteria, prompt } = req.body;
+  const uploadfile = req.file;
+
+  if (!uploadfile || !criteria || !prompt) {
+    return res.status(400).json({ error: 'All fields are required' });
+  }
+
+  const sqlInsert = 'INSERT INTO screening (criteria, fileupload, prompt) VALUES ($1, $2, $3)';
+  const values = [criteria, uploadfile.originalname, prompt];
+  await pool.query(sqlInsert, values);
+  res.status(200).json({ message: 'Data inserted successfully' });
+} catch (error) {
+  console.error('Error processing request:', error);
+  res.status(500).json({ error: 'Internal server error' });
+}
+});
+
+//**************************schedule*********************** */
+app.get('/passion-api/scheduleget', (req, res) => {
+  const sqlGet= "SELECT * from schedule";
+  pool.query(sqlGet,(error,result)=>{
+    if (error) {
+      console.error('Error fetching data:', error);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+      res.json(result.rows);
+  });
+});
+
+app.use(bodyParser.json());
+
+// POST route definition
+app.post('/passion-api/schedulepost', async (req, res) => {
+const { email, whatsapp, date, time, contact } = req.body;
+
+if (!email || !whatsapp || !date || !time || !contact) {
+  return res.status(400).json({ error: "All fields are required" });
+}
+
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+if (!emailRegex.test(email)) {
+  return res.status(400).json({ error: "Invalid email format" });
+}
+
+const isoDateRegex = /^\d{4}-\d{2}-\d{2}$/;
+if (!isoDateRegex.test(date)) {
+  return res.status(400).json({ error: "Invalid date format, should be YYYY-MM-DD" });
+}
+
+const timeRegex = /^\d{2}:\d{2}(:\d{2})?$/;
+if (!timeRegex.test(time)) {
+  return res.status(400).json({ error: "Invalid time format, should be HH:MM or HH:MM:SS" });
+}
+
+try {
+  const sqlInsert = "INSERT INTO schedule (email, whatsapp, date, time, contact) VALUES ($1, $2, $3, $4, $5)";
+  const values = [email, whatsapp, date, time, contact];
+  await pool.query(sqlInsert, values);
+  res.status(201).json({ message: "Data inserted successfully" });
+} catch (error) {
+  console.error("Error inserting data:", error);
+  res.status(500).json({ error: "Internal server error" });
+}
+});
+
+//************************interview************************ */
+app.get('/passion-api/interviewget', (req, res) => {
+const sqlGet= 'SELECT * from interview';
+pool.query(sqlGet,(error,result)=>{
+  if (error) {
+    console.error('Error fetching data:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+    res.json(result.rows);
+});
+});
+
+/////////////////////////////////////////////
+app.post('/passion-api/interviewpost', upload.none(), async (req, res) => {
+const { name, emailid, phone, link } = req.body;
+
+// Validate input fields
+if (!name || !emailid || !phone || !link) {
+  return res.status(400).json({ error: 'All fields are required' });
+}
+
+// Additional validation for email and phone
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const phoneRegex = /^\d{10}$/;
+if (!emailRegex.test(emailid)) {
+  return res.status(400).json({ error: 'Invalid email format' });
+}
+if (!phoneRegex.test(phone)) {
+  return res.status(400).json({ error: 'Invalid phone number format' });
+}
+
+try {
+  const sqlInsert = 'INSERT INTO interview (name, emailid, phone, link) VALUES ($1, $2, $3, $4)';
+  const values = [name, emailid, phone, link];
+  await pool.query(sqlInsert, values);
+  res.status(201).json({ message: 'Record inserted successfully' });
+} catch (error) {
+  console.error('Error inserting record:', error);
+  res.status(500).json({ error: 'Internal server error' });
+}
+});
+//add a query
+app.post('/passion-api/feedbackpost', upload.none(), (req, res) => {
+const { interviewFeedback, whatWentWrong, rating } = req.body;
+
+const ratingNumber = Number(rating);
+if (isNaN(ratingNumber)) {
+  return res.status(400).json({ error: 'Rating must be a number' });
+}
+
+const sqlInsert = 'INSERT INTO feedback (interviewfeed, whatwentwrong, rating) VALUES ($1, $2, $3)';
+const values = [interviewFeedback, whatWentWrong, ratingNumber];
+
+pool.query(sqlInsert, values, (error, result) => {
+  if (error) {
+    console.error('Error inserting feedback:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+  res.status(201).json({ message: 'Feedback inserted successfully' });
+});
+});
 
 // Function to send reset email
 const sendResetEmail = (email, token) => {
@@ -3815,8 +4193,50 @@ app.post('/passion-api/reset-password', async (req, res) => {
   }
 });
 
+////////update password for register student///////////
+app.post('/api/update-password', async (req, res) => {
+  const { userid, newpassword } = req.body;
+  try {
+    // Update password in the database (pseudo-code, adapt to your DB)
+    await pool.query('UPDATE password_update SET password = $1 WHERE userid = $2', [newpassword, userid]);
 
-////////////////////////////////////////////////////////////////////////////////////////////////
+    res.status(200).json({ message: 'Password updated successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to update password' });
+  }
+});
+
+
+//////////authentication
+app.post('/passion-api/authenticate', async (req, res) => {
+  const { member_email, member_password } = req.body;
+
+  try {
+    const result = await pool.query(
+      'SELECT * FROM members WHERE member_email = $1',
+      [member_email]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(401).json({ message: 'Invalid User ID or Password' });
+    }
+
+    const user = result.rows[0];
+    const isMatch = await bcrypt.compare(member_password, user.member_password);
+
+    if (isMatch) {
+      return res.status(200).json({ message: 'Login successful', user });
+    } else {
+      return res.status(401).json({ message: 'Invalid User ID or Password' });
+    }
+  } catch (error) {
+    console.error('Error authenticating user:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+
 // Start the server
 
 app.use((err, req, res, next) => {

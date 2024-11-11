@@ -42,7 +42,7 @@ const TransactionUpdate = () => {
                 'Content-Type': 'application/json',
             },
         }).then((res) => {
-            setTransaction(res.data);
+            setTransaction(res.data[0]);
         }).catch((err) => {
             alert("Error fetching transaction data: " + err);
         });
@@ -53,22 +53,26 @@ const TransactionUpdate = () => {
         setTransaction({ ...transaction, [name]: value });
     };
 
-    const updateTransaction = (e) => {
-        e.preventDefault();
-        axios({
-            url: `${API.PUT_TRANSACTION_API}/${transactionid}`,
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            data: transaction
-        }).then((res) => {
-            alert("Transaction updated successfully");
-            navigate('/admin/transactiontable');
-        }).catch((err) => {
-            alert("Error updating transaction: " + err);
-        });
-    };
+const updateTransaction = async (e) => {
+    e.preventDefault();
+    console.log("Updating transaction with data: ", transaction); // Debugging log
+    try {
+      const res = await axios.put(API.PUT_TRANSACTION_API(transactionid), transaction, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      alert("Transaction updated successfully");
+      navigate('/admin/transaction');
+    } catch (err) {
+      alert("Error updating transation: " + err);
+      console.error("Update error: ", err);
+    }
+  };
+
+    const GoBack = () => {
+        navigate("/admin/transaction");
+      };
 
     return (
         <div className='bg-[#B5B5B5] h-[auto] pb-20 pt-10'>
@@ -281,10 +285,18 @@ const TransactionUpdate = () => {
                     <div className="flex items-center justify-between">
                         <button
                             type="submit"
-                            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                            className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
                         >
                             Update Transaction
                         </button>
+
+                        <button
+            className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded ml-4"
+            onClick={GoBack}
+          >
+            Go Back
+          </button>
+
                     </div>
                 </form>
             </div>

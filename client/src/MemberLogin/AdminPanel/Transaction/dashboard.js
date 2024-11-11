@@ -16,7 +16,7 @@ const Dashboard = () => {
 
             {/* Card structure for the image */}
             <div className="bg-white shadow-lg rounded-lg overflow-hidden w-60 mx-auto my-4">
-                <a href="https://lookerstudio.google.com/s/q7sj023e3IM" target="_blank" rel="noopener noreferrer">
+                <a href="https://lookerstudio.google.com/reporting/3c360ff3-e0a4-41ab-9a22-51ba64c2a0be" target="_blank" rel="noopener noreferrer">
                     <img
                         className="w-full h-40 object-cover"
                         src={transactionimage}

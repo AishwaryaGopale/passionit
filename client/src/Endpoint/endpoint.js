@@ -188,6 +188,8 @@ export const ADD_SELECTIONSTATUS_API =`${BASE_URL}get/api/selection_status/resul
 /////////////////MERGED_GROUP////////////////////////////
 
 export const ADD_MERGEDGROUP_API =`${BASE_URL}get/api/merged_groups`;
+export const DELETE_GROUPMERGE_API = (id) => `${BASE_URL}delete/group_merged/${id}`;
+
 
 ////////////////NESTEDGROUP////////////////////////////////
 
@@ -196,6 +198,7 @@ export const GET_GROUP_API =(id)=> `${BASE_URL}api/group/mid/${id}`
 export const ADD_GROUP_API =`${BASE_URL}api/groups`;
 
 export const POST_GROUP_API =`${BASE_URL}post/api/merged_groups`;
+
 
 /////////////////APPLYED///////////////////
 export const GET_SELECTIONSTATUS_API =(id)=> `${BASE_URL}api/selection_status/result/${id}`
@@ -290,8 +293,60 @@ export const POST_TRANSACTION_API =`${BASE_URL}post/transaction`;
 export const GET_TRANSACTION_API =`${BASE_URL}get/transaction`
 
 export const GET_TRANSACTION_BYID=(transactionid) =>`${BASE_URL}get/transaction/${transactionid}`
-
+export const GET_TRANSACTION_BYNAME=(transactiontype) =>`${BASE_URL}get/transactiontype/${transactiontype}`
 
 export const DELETE_TRANSACTION_API =(transactionid)=> `${BASE_URL}api/delete/transaction/${transactionid}`
 
-export const PUT_TRANSACTION_API =(transactionid)=> `${BASE_URL}api/update/transaction/${transactionid}`;
+export const PUT_TRANSACTION_API =(transactionid)=> `${BASE_URL}transaction/${transactionid}`;
+
+
+/////////////////transaction master//////////////////
+export const POST_TMASTER_API =`${BASE_URL}post/transactionmaster`;
+
+export const GET_TMASTER_API =`${BASE_URL}get/transactionmaster`
+
+export const GET_TMASTER_BYID=(tmasterid) =>`${BASE_URL}get/tmaster/${tmasterid}`
+
+export const DELETE_TMASTER_API =(tmasterid)=> `${BASE_URL}api/transactionmaster/${tmasterid}`
+
+export const PUT_TMASTER_API =(tmasterid)=> `${BASE_URL}transactionmaster/${tmasterid}`;
+
+
+///////////////stock exchange///////////////////
+export const POST_STOCK_API =`${BASE_URL}post/stockexchange`;
+
+export const GET_STOCK_API =`${BASE_URL}get/stockexchange`;
+
+export const GET_STOCK_BYID = (stockid) => `${BASE_URL}get/stockexchange/${stockid}`;
+
+export const DELETE_STOCK_API =(stockid)=> `${BASE_URL}api/stockexchange/${stockid}`
+
+export const PUT_STOCK_API = (stockid) => `${BASE_URL}stockexchange/${stockid}`;
+
+////////////////chatbot///////////////////////////
+////////////////////RESUME PARSER////////////////
+export const GET_RESUMEPARSER_API = `${BASE_URL}resumeparserget`
+export const POST_RESUMEPARSER_API = `${BASE_URL}resumeparserpost`;
+
+/////////////////SCREENING/////////////////
+export const GET_SCREENING_API = `${BASE_URL}screeningget`
+export const POST_SCREENING_API = `${BASE_URL}screeningpost`;
+
+/////////////////////SCHEDULE/////////////////
+export const GET_SCHEDULE_API = `${BASE_URL}scheduleget`
+export const POST_SCHEDULE_API = `${BASE_URL}schedulepost`;
+
+///////////////INTERVIEW////////////////
+export const GET_INTERVIEW_API = `${BASE_URL}interviewget`
+export const POST_INTERVIEW_API = `${BASE_URL}interviewpost`;
+
+///////////////////FEEDBACK////////////////////////
+export const POST_FEEDBACK_API = `${BASE_URL}feedbackpost`
+
+///////////UPDATE PASS/////////////
+export const POST_UPDATEPASS_API =`${BASE_URL}api/update-password`;
+
+export const POST_AUTHENTICATE_API = `${BASE_URL}authenticate`;
+
+
+

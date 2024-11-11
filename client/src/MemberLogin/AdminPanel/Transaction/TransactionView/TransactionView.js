@@ -16,7 +16,7 @@ const TransactionView = () => {
           'Content-Type': 'application/json'
         }
       }).then((res) => {
-        setTransaction(res.data);
+        setTransaction(res.data[0]);
       }).catch((error) => {
         console.error('Error fetching transaction:', error);
       });
@@ -28,16 +28,18 @@ const TransactionView = () => {
 
   const navigate = useNavigate();
 
-  const deleteTransaction = (transactionid) => {
-    axios({
-      url: API.DELETE_TRANSACTION_API(transactionid),
-      method: 'DELETE',
-    }).then(() => {
-      alert("Deleted transaction successfully");
-      navigate("/admin");
-    }).catch(() => {
-      alert("Error deleting transaction");
-    });
+  const deleteTransaction = (stockid) => {
+    const deleteUrl = API.DELETE_STOCK_API(transactionid);
+    console.log('Deleting stock at:', deleteUrl); // Log the URL
+    axios.delete(deleteUrl)
+      .then((res) => {
+        alert("Deleted transaction successfully");
+        navigate("/admin/Stockexchange");
+      })
+      .catch((error) => {
+        alert("transaction not deleted");
+        console.error('Error details:', error.response ? error.response.data : error.message); // Log error details
+      });
   };
 
   const goBack = () => {
